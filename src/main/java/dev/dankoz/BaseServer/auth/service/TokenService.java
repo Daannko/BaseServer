@@ -34,7 +34,7 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(60)) //Expires in one hour
+                .expiresAt(now.plusSeconds(60 * 15)) //Expires in one hour
                 .subject(authentication.getName())
                 .claim("permissions",permissions)
                 .build();

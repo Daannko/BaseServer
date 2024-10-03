@@ -19,10 +19,17 @@ public class HomeController {
 
     @GetMapping("/basic")
     public String basic(){
+         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return "Hello Basic" ;
+    }
+
+    @GetMapping("/test")
+    public String test(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 
         return "Hello Basic" ;
     }
+
 
 }

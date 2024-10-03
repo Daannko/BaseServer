@@ -53,7 +53,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize  -> authorize
-                        .requestMatchers("/basic").hasAuthority("BASIC")
+                        .requestMatchers("/basic").hasAuthority("PERMISSION_BASIC")
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
