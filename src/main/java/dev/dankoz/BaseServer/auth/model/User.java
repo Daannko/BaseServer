@@ -8,10 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Builder
@@ -23,12 +20,15 @@ public class User implements UserDetails {
     @GeneratedValue
     private Integer id;
     private String name;
+    @Column(nullable = false,unique = true)
     private String email;
     private String password;
     private Date createdAt;
     private boolean enabled;
     @UpdateTimestamp
     private Date lastSeen;
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
+    private Set<RefreshToken> refreshTokens;
 
     public Set<Permission> getPermissions() {
         return permissions;
@@ -73,6 +73,13 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    public void addRefreshToken(RefreshToken refreshToken){
+        if(this.refreshTokens == null){
+            this.refreshTokens = new HashSet<>();
+        }
+        this.refreshTokens.add(refreshToken);
     }
 
     public Collection<? extends GrantedAuthority> getAuthorities(){

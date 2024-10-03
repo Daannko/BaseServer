@@ -1,5 +1,7 @@
 package dev.dankoz.BaseServer.auth.service;
 
+import dev.dankoz.BaseServer.auth.model.RefreshToken;
+import dev.dankoz.BaseServer.auth.model.User;
 import dev.dankoz.BaseServer.config.RsaKeyProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,10 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TokenService {
@@ -35,7 +34,7 @@ public class TokenService {
 
         claims.put("permissions",permissions);
 
-        int expiration = 1000 * 60  * 15; // 15 minutes?
+        long expiration = 1000 * 60  * 15; // 15 minutes
         return   Jwts.builder()
                 .setClaims(claims)
                 .setSubject(authentication.getName())
@@ -45,7 +44,14 @@ public class TokenService {
                 .compact();
     }
 
-
+    public RefreshToken generateRefreshToken(User user){
+        long expiration = 1000 * 60  * 60 * 24;
+        return RefreshToken.builder()
+                .user(user)
+                .value(UUID.randomUUID().toString() +  UUID.randomUUID().toString())
+                .expire(new Date(System.currentTimeMillis() + expiration))
+                .build();
+    }
 
     public Date extractExpirationDate(String token){
         return new Date(Long.valueOf((Integer)getClaims(token).get("exp")));

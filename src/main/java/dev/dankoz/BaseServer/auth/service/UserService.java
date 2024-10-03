@@ -1,8 +1,10 @@
 package dev.dankoz.BaseServer.auth.service;
 
-import dev.dankoz.BaseServer.auth.dto.LoginUserDto;
+import dev.dankoz.BaseServer.auth.dto.LoginRequestDto;
+import dev.dankoz.BaseServer.auth.dto.LoginResponseDto;
 import dev.dankoz.BaseServer.auth.dto.RegisterUserDto;
 import dev.dankoz.BaseServer.auth.model.Permission;
+import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.model.User;
 import dev.dankoz.BaseServer.auth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -23,15 +26,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
+        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
-    public LoginUserDto register(RegisterUserDto registerUserDto) {
+    public LoginRequestDto register(RegisterUserDto registerUserDto) {
 
         User user = User.builder()
                 .email(registerUserDto.email())
@@ -44,14 +49,22 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-
-
         return null;
     }
 
-    public String login(LoginUserDto loginUserDto) {
-        Authentication auth = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginUserDto.email(),loginUserDto.password()));
-        return tokenService.generateJWT(auth);
+    public LoginResponseDto token(LoginRequestDto loginRequestDto) {
+        Authentication auth = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginRequestDto.email(), loginRequestDto.password()));
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found!") );
+
+        String jwt = tokenService.generateJWT(auth);
+        RefreshToken refreshToken = tokenService.generateRefreshToken(user);
+
+        user.addRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        return new LoginResponseDto(jwt,refreshToken.getValue());
     }
 
     public User getUserById(Integer id){
