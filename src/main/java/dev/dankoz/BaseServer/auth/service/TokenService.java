@@ -1,25 +1,26 @@
 package dev.dankoz.BaseServer.auth.service;
 
+import dev.dankoz.BaseServer.config.RsaKeyProperties;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
 
-    private final JwtEncoder encoder;
-    private final JwtDecoder decoder;
-    public TokenService(JwtEncoder encoder, JwtDecoder decoder) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+    private final RsaKeyProperties rsaKeyProperties;
+
+    public TokenService(RsaKeyProperties rsaKeyProperties) {
+        this.rsaKeyProperties = rsaKeyProperties;
     }
 
     public String generateJWT(String email,String password){
@@ -27,22 +28,27 @@ public class TokenService {
         return generateJWT(authentication);
     }
     public String generateJWT(Authentication authentication){
-        Instant now = Instant.now();
-        String permissions = authentication.getAuthorities().stream()
+        Map<String,Object> claims = new HashMap<>();
+        List<String> permissions = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(60 * 15)) //Expires in one hour
-                .subject(authentication.getName())
-                .claim("permissions",permissions)
-                .build();
-        return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+                .toList();
+
+        claims.put("permissions",permissions);
+
+        int expiration = 1000 * 60  * 15; // 15 minutes?
+        return   Jwts.builder()
+                .setClaims(claims)
+                .setSubject(authentication.getName())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(rsaKeyProperties.privateKey(), SignatureAlgorithm.RS256)
+                .compact();
     }
 
+
+
     public Date extractExpirationDate(String token){
-        return new Date((long)getClaims(token).get("exp"));
+        return new Date(Long.valueOf((Integer)getClaims(token).get("exp")));
     }
 
     public boolean isTokenExpired(String token){
@@ -56,7 +62,11 @@ public class TokenService {
     }
 
     public Map<String, Object> getClaims(String token){
-        return decoder.decode(token).getClaims();
+        return Jwts.parserBuilder()
+                .setSigningKey(rsaKeyProperties.publicKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public String extractUsername(String token){
