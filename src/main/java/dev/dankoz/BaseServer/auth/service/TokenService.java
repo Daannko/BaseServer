@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.*;
 
 @Service
@@ -45,10 +46,14 @@ public class TokenService {
     }
 
     public RefreshToken generateRefreshToken(User user){
+        byte[] token = new byte[128];
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(token);
+
         long expiration = 1000 * 60  * 60 * 24;
         return RefreshToken.builder()
                 .user(user)
-                .value(UUID.randomUUID().toString() +  UUID.randomUUID().toString())
+                .value(Base64.getEncoder().withoutPadding().encodeToString(token))
                 .expire(new Date(System.currentTimeMillis() + expiration))
                 .build();
     }

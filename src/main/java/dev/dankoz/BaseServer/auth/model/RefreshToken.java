@@ -27,4 +27,8 @@ public class RefreshToken {
     public RefreshToken() {
 
     }
+
+    public boolean isExpired(){
+        return new Date(System.currentTimeMillis()).after(this.expire);
+    }
 }

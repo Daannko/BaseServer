@@ -82,6 +82,10 @@ public class User implements UserDetails {
         this.refreshTokens.add(refreshToken);
     }
 
+    public Integer getId() {
+        return id;
+    }
+
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of();
     }

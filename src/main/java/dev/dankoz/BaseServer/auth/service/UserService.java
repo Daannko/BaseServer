@@ -6,18 +6,22 @@ import dev.dankoz.BaseServer.auth.dto.RegisterUserDto;
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
 import dev.dankoz.BaseServer.auth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import java.sql.Ref;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -27,13 +31,16 @@ public class UserService {
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver,
+                       RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public LoginRequestDto register(RegisterUserDto registerUserDto) {
@@ -59,7 +66,19 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!") );
 
         String jwt = tokenService.generateJWT(auth);
-        RefreshToken refreshToken = tokenService.generateRefreshToken(user);
+
+        RefreshToken refreshToken = null;
+
+        // If there is a token and its not expired return it
+        Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findAllByExpireAfterAndUser(new Date(System.currentTimeMillis()),user);
+        if(optionalRefreshToken.isPresent()) {
+            refreshToken = optionalRefreshToken.get();
+        }else {
+            // Make sure that there is no token with the same value already!
+            while(refreshToken == null || refreshTokenRepository.countByValue(refreshToken.getValue()) != 0) {
+                refreshToken = tokenService.generateRefreshToken(user);
+            }
+        }
 
         user.addRefreshToken(refreshToken);
         userRepository.save(user);
