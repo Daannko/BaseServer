@@ -4,15 +4,16 @@ import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.auth.repository.PermissionRepository;
 import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
 import dev.dankoz.BaseServer.auth.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.*;
 
@@ -24,30 +25,41 @@ public class UserService {
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PermissionRepository permissionRepository;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager,
-                       RefreshTokenRepository refreshTokenRepository) {
+                       RefreshTokenRepository refreshTokenRepository,
+                       PermissionRepository permissionRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.permissionRepository = permissionRepository;
     }
 
-    public LoginRequestDto register(RegisterUserDto registerUserDto) {
+    public LoginResponseDto register(RegisterRequestDto registerRequestDto) {
+
+
+        if(userRepository.countByEmail(registerRequestDto.email()) != 0){
+            throw new EntityExistsException("User with this email already Exists");
+        }
+
+        Permission permission = permissionRepository.findByName("PERMISSION_BASIC")
+                .orElseThrow();
 
         User user = User.builder()
-                .email(registerUserDto.email())
-                .name(registerUserDto.name())
-                .password(passwordEncoder.encode(registerUserDto.password()))
+                .email(registerRequestDto.email().toLowerCase())
+                .name(registerRequestDto.name())
+                .password(passwordEncoder.encode(registerRequestDto.password()))
                 .createdAt(new Date())
                 .lastSeen(new Date())
                 .enabled(true)
-                .permissions(new HashSet<>(List.of(new Permission("PERMISSION_BASIC"))))
+                .permissions(new HashSet<>(List.of(permission)))
                 .build();
 
         userRepository.save(user);
-        return null;
+        return token(new LoginRequestDto(registerRequestDto.email(), registerRequestDto.password()));
     }
 
     public LoginResponseDto token(LoginRequestDto loginRequestDto) {
@@ -95,8 +107,6 @@ public class UserService {
         }
 
         return new RefreshResponseDto(tokenService.generateJWT(token.get().getUser()));
-
-
     }
 }
 
