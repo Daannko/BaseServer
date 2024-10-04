@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer> {
 
     long countByValue(String value);
-    RefreshToken getByValue(String value);
 
     Optional<RefreshToken> findAllByExpireAfterAndUser(Date now, User user);
+    Optional<RefreshToken> findByValue(String value);
 }

@@ -27,6 +27,10 @@ public class TokenService {
         Authentication authentication = new UsernamePasswordAuthenticationToken(email,password);
         return generateJWT(authentication);
     }
+
+    public String generateJWT(User user){
+        return generateJWT(new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities()));
+    }
     public String generateJWT(Authentication authentication){
         Map<String,Object> claims = new HashMap<>();
         List<String> permissions = authentication.getAuthorities().stream()

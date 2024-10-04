@@ -1,8 +1,6 @@
 package dev.dankoz.BaseServer.auth.service;
 
-import dev.dankoz.BaseServer.auth.dto.LoginRequestDto;
-import dev.dankoz.BaseServer.auth.dto.LoginResponseDto;
-import dev.dankoz.BaseServer.auth.dto.RegisterUserDto;
+import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.model.User;
@@ -11,17 +9,12 @@ import dev.dankoz.BaseServer.auth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.sql.Ref;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -30,16 +23,14 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
-    private final HandlerExceptionResolver handlerExceptionResolver;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver,
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager,
                        RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
-        this.handlerExceptionResolver = handlerExceptionResolver;
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
@@ -96,5 +87,16 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
     }
 
+    public RefreshResponseDto refresh(RefreshRequestDto refreshRequestDto) {
+        Optional<RefreshToken> token = refreshTokenRepository.findByValue(refreshRequestDto.refreshToken());
+
+        if(token.isEmpty()){
+            throw new NoSuchElementException("No record of token!");
+        }
+
+        return new RefreshResponseDto(tokenService.generateJWT(token.get().getUser()));
+
+
+    }
 }
 
