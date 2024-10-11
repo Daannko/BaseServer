@@ -4,6 +4,7 @@ import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController()
 @RequestMapping("/auth")
  class AuthController {
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
     public LoginResponseDto register(@RequestBody RegisterRequestDto registerRequestDto){
         return userService.register(registerRequestDto);
     }
-
     @PostMapping("/token")
     public LoginResponseDto login(@RequestBody LoginRequestDto loginRequestDto){
         return userService.token(loginRequestDto);
@@ -27,6 +27,10 @@ import org.springframework.web.bind.annotation.*;
     @PostMapping("/refresh")
     public RefreshResponseDto login(@RequestBody RefreshRequestDto refreshRequestDto){
         return userService.refresh(refreshRequestDto);
+    }
+    @GetMapping("/test")
+    public String login(){
+        return "Hello cads";
     }
 
 }

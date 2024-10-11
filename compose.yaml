@@ -1,17 +1,41 @@
+version: '3.8'
 services:
-  postgres:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Make sure you have a Dockerfile in the root directory
+    container_name: backend-app
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydatabase
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    volumes:
+      - ./BaseServer:/app/src  # Bind mount to sync your local code with the container
+    command: mvn spring-boot:run  # Use Maven to run the app in development mode
+
+  db:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=myuser
     ports:
-      - '5432'
-  pgadmin:
-    image: 'dpage/pgadmin4:latest'
-    environment:
-      PGADMIN_DEFAULT_EMAIL: 'admin@localhost.com'
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 5050
-    ports:
-      - '5050:5050'
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
