@@ -7,6 +7,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 
+@CrossOrigin
 @RestController()
 @RequestMapping("/auth")
  class AuthController {
@@ -35,8 +36,9 @@ import org.springframework.web.bind.annotation.*;
         return "Hello cads";
     }
 
-    @GetMapping("/test2")
-    public String getTest(HttpServletRequest request) {
-        return "CSRF Token: " + ((CsrfToken)request.getAttribute("_csrf")).getToken();
+    @CrossOrigin
+    @PostMapping("/test2")
+    public String getTest() {
+        return "HELLO";
     }
 }
