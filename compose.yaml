@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile  # Make sure you have a Dockerfile in the root directory
+      dockerfile: Dockerfile
     container_name: backend-app
     depends_on:
       - db
@@ -14,11 +14,12 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
     ports:
       - "8080:8080"
+      - "5005:5005" #for debuging
     networks:
       - app-network
     volumes:
-      - ./BaseServer:/app/src  # Bind mount to sync your local code with the container
-    command: mvn spring-boot:run  # Use Maven to run the app in development mode
+      - ./BaseServer:/app/src
+    command: mvn spring-boot:run
 
   db:
     image: 'postgres:latest'

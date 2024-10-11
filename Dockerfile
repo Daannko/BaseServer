@@ -12,4 +12,4 @@ RUN mvn clean install -DskipTests
 FROM openjdk:17-jdk-slim
 ADD ./target/BaseServer-0.0.1-SNAPSHOT.jar .
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/BaseServer-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "/BaseServer-0.0.1-SNAPSHOT.jar"]

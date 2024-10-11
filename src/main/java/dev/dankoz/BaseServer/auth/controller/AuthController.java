@@ -2,6 +2,8 @@ package dev.dankoz.BaseServer.auth.controller;
 
 import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -33,4 +35,8 @@ import org.springframework.web.bind.annotation.*;
         return "Hello cads";
     }
 
+    @GetMapping("/test2")
+    public String getTest(HttpServletRequest request) {
+        return "CSRF Token: " + ((CsrfToken)request.getAttribute("_csrf")).getToken();
+    }
 }
