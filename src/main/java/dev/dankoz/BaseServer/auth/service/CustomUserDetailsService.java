@@ -1,7 +1,7 @@
 package dev.dankoz.BaseServer.auth.service;
 
-import dev.dankoz.BaseServer.auth.model.User;
-import dev.dankoz.BaseServer.auth.repository.UserRepository;
+import dev.dankoz.BaseServer.general.model.User;
+import dev.dankoz.BaseServer.general.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,10 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
 
-        Set<GrantedAuthority> authorities = user.getPermissions().stream()
-                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
-                .collect(Collectors.toSet());
-
-        return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(),authorities);
+        return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(),user.getAuthorities());
     }
 }

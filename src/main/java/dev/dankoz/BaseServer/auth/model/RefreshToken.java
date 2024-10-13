@@ -1,10 +1,10 @@
 package dev.dankoz.BaseServer.auth.model;
 
+import dev.dankoz.BaseServer.general.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Date;
 
@@ -23,6 +23,7 @@ public class RefreshToken {
     @Column(nullable = false,unique = true)
     private String value;
     private Date expire;
+    private boolean used;
 
     public RefreshToken() {
 

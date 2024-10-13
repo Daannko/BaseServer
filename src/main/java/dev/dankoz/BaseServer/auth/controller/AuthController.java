@@ -1,9 +1,8 @@
 package dev.dankoz.BaseServer.auth.controller;
 
 import dev.dankoz.BaseServer.auth.dto.*;
-import dev.dankoz.BaseServer.auth.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.web.csrf.CsrfToken;
+import dev.dankoz.BaseServer.general.dto.UserDataDTO;
+import dev.dankoz.BaseServer.general.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -31,14 +30,9 @@ import org.springframework.web.bind.annotation.*;
     public RefreshResponseDto login(@RequestBody RefreshRequestDto refreshRequestDto){
         return userService.refresh(refreshRequestDto);
     }
-    @GetMapping("/test")
-    public String login(){
-        return "Hello cads";
-    }
 
-    @CrossOrigin
-    @PostMapping("/test2")
-    public String getTest() {
-        return "HELLO";
+    @GetMapping("/me")
+    public UserDataDTO me(){
+        return userService.getUser();
     }
 }

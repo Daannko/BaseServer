@@ -2,7 +2,7 @@ package dev.dankoz.BaseServer.auth.repository;
 
 
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
-import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.general.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Date;

@@ -1,16 +1,22 @@
-package dev.dankoz.BaseServer.auth.service;
+package dev.dankoz.BaseServer.general.service;
 
 import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
-import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.auth.service.TokenService;
+import dev.dankoz.BaseServer.config.exceptions.EmailAlreadyExistsException;
+import dev.dankoz.BaseServer.general.dto.UserDataDTO;
+import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.auth.repository.PermissionRepository;
 import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
-import dev.dankoz.BaseServer.auth.repository.UserRepository;
+import dev.dankoz.BaseServer.general.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,9 +46,8 @@ public class UserService {
 
     public LoginResponseDto register(RegisterRequestDto registerRequestDto) {
 
-
         if(userRepository.countByEmail(registerRequestDto.email()) != 0){
-            throw new EntityExistsException("User with this email already Exists");
+            throw new EmailAlreadyExistsException("User with this email already exists");
         }
 
         Permission permission = permissionRepository.findByName("PERMISSION_BASIC")
@@ -63,10 +68,16 @@ public class UserService {
     }
 
     public LoginResponseDto token(LoginRequestDto loginRequestDto) {
-        Authentication auth = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginRequestDto.email(), loginRequestDto.password()));
+        Authentication auth;
+        try{
+             auth = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginRequestDto.email().toLowerCase(), loginRequestDto.password()));
+        }
+        catch (Exception e){
+            throw new BadCredentialsException("Invalid email or password! :(");
+        }
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found!") );
+        User user = userRepository.findByEmail(loginRequestDto.email().toLowerCase())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found!") );
 
         String jwt = tokenService.generateJWT(auth);
 
@@ -99,6 +110,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
     }
 
+
     public RefreshResponseDto refresh(RefreshRequestDto refreshRequestDto) {
         Optional<RefreshToken> token = refreshTokenRepository.findByValue(refreshRequestDto.refreshToken());
 
@@ -108,5 +120,12 @@ public class UserService {
 
         return new RefreshResponseDto(tokenService.generateJWT(token.get().getUser()));
     }
+
+    public UserDataDTO getUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findById(1).get();
+        return UserDataDTO.builder().build();
+    }
+
 }
 

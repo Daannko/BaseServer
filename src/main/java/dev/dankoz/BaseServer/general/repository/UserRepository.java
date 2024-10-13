@@ -1,6 +1,6 @@
-package dev.dankoz.BaseServer.auth.repository;
+package dev.dankoz.BaseServer.general.repository;
 
-import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.general.model.User;
 
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;

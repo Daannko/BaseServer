@@ -1,7 +1,7 @@
 package dev.dankoz.BaseServer.auth.service;
 
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
-import dev.dankoz.BaseServer.auth.model.User;
+import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.config.RsaKeyProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -59,6 +59,7 @@ public class TokenService {
                 .user(user)
                 .value(Base64.getEncoder().withoutPadding().encodeToString(token))
                 .expire(new Date(System.currentTimeMillis() + expiration))
+                .used(false)
                 .build();
     }
 
