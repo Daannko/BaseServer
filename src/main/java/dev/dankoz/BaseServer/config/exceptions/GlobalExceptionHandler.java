@@ -21,16 +21,33 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<?> badCredentials(BadCredentialsException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<?> userNotFound(UsernameNotFoundException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<?> userNotFound(EmailAlreadyExistsException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.CONFLICT);
+    }
+
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> userNotFound(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String parseToJson(String message) throws JsonProcessingException {
         ExceptionResponse response = ExceptionResponse.builder()
                 .date(new Date())
-                .message(exception.getMessage())
+                .message(message)
                 .build();
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(response);
-
-        return new ResponseEntity<>(json, HttpStatus.UNAUTHORIZED);
+        return ow.writeValueAsString(response);
     }
-
 
 }
