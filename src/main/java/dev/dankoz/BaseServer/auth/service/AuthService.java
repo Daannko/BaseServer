@@ -9,6 +9,8 @@ import dev.dankoz.BaseServer.config.exceptions.EmailAlreadyExistsException;
 import dev.dankoz.BaseServer.config.exceptions.RefreshTokenException;
 import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.general.repository.UserRepository;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +20,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Ref;
 import java.util.*;
 
 @Service
@@ -41,7 +42,7 @@ public class AuthService {
         this.permissionRepository = permissionRepository;
     }
 
-    public LoginResponseDto register(RegisterRequestDto registerRequestDto) {
+    public ResponseEntity<?> register(RegisterRequestDto registerRequestDto) {
 
         if(userRepository.countByEmail(registerRequestDto.email()) != 0){
             throw new EmailAlreadyExistsException("User with this email already exists");
@@ -61,10 +62,11 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
         return token(new LoginRequestDto(registerRequestDto.email(), registerRequestDto.password()));
     }
 
-    public LoginResponseDto token(LoginRequestDto loginRequestDto) {
+    public ResponseEntity<?> token(LoginRequestDto loginRequestDto) {
         Authentication auth;
         try{
             auth = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginRequestDto.email().toLowerCase(), loginRequestDto.password()));
@@ -73,21 +75,16 @@ public class AuthService {
             throw new BadCredentialsException("Invalid email or password! :(");
         }
 
-        User user = userRepository.findByEmail(loginRequestDto.email().toLowerCase())
+        User user = userRepository.findByEmail(auth.getName().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found!") );
 
-        String jwt = tokenService.generateJWT(auth);
-        RefreshToken refreshToken = tokenService.generateRefreshToken(user);;
 
-        user.addRefreshToken(refreshToken);
-        userRepository.save(user);
-
-        return new LoginResponseDto(jwt,refreshToken.getValue());
+        return getTokenResponse(user);
     }
 
 
 
-    public LoginResponseDto refresh(RefreshRequestDto refreshRequestDto) {
+    public ResponseEntity<?> refresh(RefreshRequestDto refreshRequestDto) {
 
         Optional<RefreshToken> token = refreshTokenRepository.findByValue(refreshRequestDto.refreshToken());
         RefreshToken oldRefreshToken = token.orElseThrow(() -> new RefreshTokenException("No record of token!"));
@@ -105,18 +102,47 @@ public class AuthService {
             throw new RefreshTokenException("Token does not belong to user!");
         }
 
-        RefreshToken newRefreshToken = tokenService.generateRefreshToken(user);
-        user.addRefreshToken(newRefreshToken);
         oldRefreshToken.use();
-
-        userRepository.save(user);
         refreshTokenRepository.save(oldRefreshToken);
 
-        return LoginResponseDto.builder()
-                .jwt(tokenService.generateJWT(authentication))
-                .refreshToken(newRefreshToken.getValue())
-                .build();
+        return getTokenResponse(user);
     }
 
+    private ResponseEntity<?> getTokenResponse(User user){
+
+        String jwt = tokenService.generateJWT(user);
+        RefreshToken refreshToken = tokenService.generateRefreshToken(user);;
+
+        //TODO: After localhost change change secure to true and "Lax" to "Strict"
+        ResponseCookie accessTokenCookie = ResponseCookie.from("jwtToken", jwt)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(30 * 60) // 30 minutes expiration for access token
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken.getValue())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge( 24 * 60 * 60) // 7 days expiration for refresh token
+                .sameSite("Lax")
+                .build();
+
+        user.addRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        //TODO: REMOVE THIS, for development im resending the tokens but in future it will not be needed.
+        LoginResponseDto temporary = LoginResponseDto.builder()
+                .refreshToken(refreshToken.getValue())
+                .jwt(jwt)
+                .build();
+
+        return ResponseEntity.ok()
+                .header("Set-Cookie",accessTokenCookie.toString())
+                .header("Set-Cookie",refreshTokenCookie.toString())
+                .body(temporary);
+    }
 
 }
