@@ -1,6 +1,7 @@
 package dev.dankoz.BaseServer.config;
 
 import dev.dankoz.BaseServer.auth.service.TokenService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,10 +23,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 {
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public JwtAuthenticationFilter(TokenService tokenService, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(TokenService tokenService, UserDetailsService userDetailsService, HandlerExceptionResolver handlerExceptionResolver) {
         this.tokenService = tokenService;
         this.userDetailsService = userDetailsService;
+        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
@@ -37,8 +40,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
             return;
         }
 
+        String email = null;
         final String jwt = authHeader.substring(7);
-        String email = tokenService.extractUsername(jwt);
+        try {
+             email = tokenService.extractUsername(jwt);
+        }catch (ExpiredJwtException e){
+            handlerExceptionResolver.resolveException(request,response,null,new ExpiredJwtException(e.getHeader(),e.getClaims(),e.getMessage()));
+        }
+
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -53,7 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        filterChain.doFilter(request,response);
-
+            filterChain.doFilter(request,response);
     }
 }

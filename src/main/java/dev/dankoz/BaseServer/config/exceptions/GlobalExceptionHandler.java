@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import dev.dankoz.BaseServer.general.dto.ExceptionResponse;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
-import org.springframework.http.HttpStatus;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,34 +14,43 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
 
+import static org.springframework.http.HttpStatus.*;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private final int JWT_EXPIRED = 461;
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<?> badCredentials(BadCredentialsException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(parseToJson(exception.getMessage(),UNAUTHORIZED.value()), UNAUTHORIZED);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> userNotFound(UsernameNotFoundException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(parseToJson(exception.getMessage(),NOT_FOUND.value()), NOT_FOUND);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<?> userNotFound(EmailAlreadyExistsException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.CONFLICT);
+    public ResponseEntity<?> emailUsed(EmailAlreadyExistsException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), CONFLICT.value()), CONFLICT);
     }
-
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> userNotFound(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?> serverError(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), INTERNAL_SERVER_ERROR.value()),INTERNAL_SERVER_ERROR);
     }
 
-    private String parseToJson(String message) throws JsonProcessingException {
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<?> expiredToken(ExpiredJwtException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(),JWT_EXPIRED), UNAUTHORIZED);
+    }
+
+    private String parseToJson(String message, int code) throws JsonProcessingException {
         ExceptionResponse response = ExceptionResponse.builder()
                 .date(new Date())
                 .message(message)
+                .code(code)
                 .build();
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();

@@ -30,9 +30,4 @@ import org.springframework.web.bind.annotation.*;
     public RefreshResponseDto login(@RequestBody RefreshRequestDto refreshRequestDto){
         return userService.refresh(refreshRequestDto);
     }
-
-    @GetMapping("/me")
-    public UserDataDTO me(){
-        return userService.getUser();
-    }
 }

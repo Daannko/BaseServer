@@ -6,5 +6,5 @@ import lombok.Builder;
 import java.util.Date;
 
 @Builder
-public record ExceptionResponse(Date date, String message){
+public record ExceptionResponse(Date date, String message,int code){
 }
