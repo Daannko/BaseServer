@@ -36,10 +36,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(parseToJson(exception.getMessage(), CONFLICT.value()), CONFLICT);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> serverError(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage(), INTERNAL_SERVER_ERROR.value()),INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(RuntimeException.class)
+//    public ResponseEntity<?> serverError(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
+//        try{
+//            throw new ServerInfoException(exception.getMessage());
+//        }
+//        catch (Exception e){
+//            return new ResponseEntity<>(parseToJson(exception.getMessage(), INTERNAL_SERVER_ERROR.value()),INTERNAL_SERVER_ERROR);
+//        }
+//
+//    }
 
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<?> expiredToken(ExpiredJwtException exception, WebRequest request) throws  JsonProcessingException {

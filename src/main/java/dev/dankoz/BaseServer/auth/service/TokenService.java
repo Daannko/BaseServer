@@ -1,6 +1,7 @@
 package dev.dankoz.BaseServer.auth.service;
 
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
+import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
 import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.config.RsaKeyProperties;
 import io.jsonwebtoken.Jwts;
@@ -18,9 +19,12 @@ import java.util.*;
 public class TokenService {
 
     private final RsaKeyProperties rsaKeyProperties;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public TokenService(RsaKeyProperties rsaKeyProperties) {
+    public TokenService(RsaKeyProperties rsaKeyProperties,
+                        RefreshTokenRepository refreshTokenRepository) {
         this.rsaKeyProperties = rsaKeyProperties;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public String generateJWT(String email,String password){
@@ -55,6 +59,7 @@ public class TokenService {
         secureRandom.nextBytes(token);
 
         long expiration = 1000 * 60  * 60 * 24;
+
         return RefreshToken.builder()
                 .user(user)
                 .value(Base64.getEncoder().withoutPadding().encodeToString(token))

@@ -32,4 +32,7 @@ public class RefreshToken {
     public boolean isExpired(){
         return new Date(System.currentTimeMillis()).after(this.expire);
     }
+    public void use(){
+        this.used = true;
+    }
 }

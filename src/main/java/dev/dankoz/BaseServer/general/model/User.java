@@ -5,6 +5,7 @@ import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @Entity
 @Builder
 @AllArgsConstructor
+@Getter
 @Table(name = "users")
 public class User implements UserDetails {
 
