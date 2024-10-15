@@ -9,6 +9,9 @@ import dev.dankoz.BaseServer.config.exceptions.EmailAlreadyExistsException;
 import dev.dankoz.BaseServer.config.exceptions.RefreshTokenException;
 import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.general.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -84,10 +88,21 @@ public class AuthService {
 
 
 
-    public ResponseEntity<?> refresh(RefreshRequestDto refreshRequestDto) {
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
 
-        Optional<RefreshToken> token = refreshTokenRepository.findByValue(refreshRequestDto.refreshToken());
-        RefreshToken oldRefreshToken = token.orElseThrow(() -> new RefreshTokenException("No record of token!"));
+        Cookie[] cookies = request.getCookies();
+        if(cookies == null){
+            throw new RefreshTokenException("No refresh token found");
+        }
+
+        Optional<Cookie> cookie = Arrays.stream(cookies).filter(e -> e.getName().equals("refreshToken")).findFirst();
+        if(cookie.isEmpty()){
+            throw new RefreshTokenException("No refresh token found");
+        }
+
+        RefreshToken oldRefreshToken = refreshTokenRepository.findByValue(cookie.get().getValue())
+                .orElseThrow(() -> new RefreshTokenException("No record of token!"));
+
         if (oldRefreshToken.isUsed()){
             //TODO: Add some logging, this acction in prod witll mean that user was propably compromised.
             throw new RefreshTokenException("Token already used!");
@@ -95,30 +110,23 @@ public class AuthService {
             throw new RefreshTokenException("Token expired!");
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());
-        User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException("User not found!"));
-        if(!user.getId().equals(token.get().getUser().getId())){
-            throw new RefreshTokenException("Token does not belong to user!");
-        }
-
         oldRefreshToken.use();
         refreshTokenRepository.save(oldRefreshToken);
 
-        return getTokenResponse(user);
+        return getTokenResponse(oldRefreshToken.getUser());
     }
 
     private ResponseEntity<?> getTokenResponse(User user){
 
         String jwt = tokenService.generateJWT(user);
-        RefreshToken refreshToken = tokenService.generateRefreshToken(user);;
+        RefreshToken refreshToken = tokenService.generateRefreshToken(user);
 
         //TODO: After localhost change change secure to true and "Lax" to "Strict"
         ResponseCookie accessTokenCookie = ResponseCookie.from("jwtToken", jwt)
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(30 * 60) // 30 minutes expiration for access token
+                .maxAge(Duration.ofMinutes(30))
                 .sameSite("Lax")
                 .build();
 
@@ -126,17 +134,16 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge( 24 * 60 * 60) // 7 days expiration for refresh token
+                .maxAge( Duration.ofDays(1))
                 .sameSite("Lax")
                 .build();
 
         user.addRefreshToken(refreshToken);
         userRepository.save(user);
 
-        //TODO: REMOVE THIS, for development im resending the tokens but in future it will not be needed.
         LoginResponseDto temporary = LoginResponseDto.builder()
-                .refreshToken(refreshToken.getValue())
-                .jwt(jwt)
+                .refreshToken(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
+                .jwt(new Date(System.currentTimeMillis() + 30 * 60 * 1000L))
                 .build();
 
         return ResponseEntity.ok()

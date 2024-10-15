@@ -20,7 +20,7 @@ public class HomeController {
     @GetMapping("/basic")
     public String basic(){
          Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return "Hello Basic" ;
+        return "{\"test\":\"elo\"}" ;
     }
 
     @GetMapping("/test")

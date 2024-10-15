@@ -3,6 +3,7 @@ package dev.dankoz.BaseServer.general.service;
 import dev.dankoz.BaseServer.general.dto.UserDataDTO;
 import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.general.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,10 +29,9 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
     }
 
-    public UserDataDTO getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(1).get();
-        return UserDataDTO.builder().build();
+    public ResponseEntity<?> getUser() {
+        return ResponseEntity.ok()
+                .body(new UserDataDTO(getUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName())));
     }
 
 }

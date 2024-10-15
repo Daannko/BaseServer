@@ -2,6 +2,8 @@ package dev.dankoz.BaseServer.auth.controller;
 
 import dev.dankoz.BaseServer.auth.dto.*;
 import dev.dankoz.BaseServer.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +28,8 @@ import org.springframework.web.bind.annotation.*;
         return authService.token(loginRequestDto);
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody RefreshRequestDto refreshRequestDto){
-        return authService.refresh(refreshRequestDto);
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request){
+        return authService.refresh(request);
     }
 }

@@ -1,5 +1,6 @@
 package dev.dankoz.BaseServer.auth.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.dankoz.BaseServer.general.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ public class RefreshToken {
     @GeneratedValue
     private Integer id;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Column(nullable = false,unique = true)
@@ -28,7 +30,7 @@ public class RefreshToken {
     public RefreshToken() {
 
     }
-
+    @JsonIgnore
     public boolean isExpired(){
         return new Date(System.currentTimeMillis()).after(this.expire);
     }
