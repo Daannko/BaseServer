@@ -116,7 +116,7 @@ public class AuthService {
         return getTokenResponse(oldRefreshToken.getUser());
     }
 
-    private ResponseEntity<?> getTokenResponse(User user){
+    private ResponseEntity<Void> getTokenResponse(User user){
 
         String jwt = tokenService.generateJWT(user);
         RefreshToken refreshToken = tokenService.generateRefreshToken(user);
@@ -141,15 +141,10 @@ public class AuthService {
         user.addRefreshToken(refreshToken);
         userRepository.save(user);
 
-        LoginResponseDto temporary = LoginResponseDto.builder()
-                .refreshToken(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
-                .jwt(new Date(System.currentTimeMillis() + 30 * 60 * 1000L))
-                .build();
-
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
                 .header("Set-Cookie",accessTokenCookie.toString())
                 .header("Set-Cookie",refreshTokenCookie.toString())
-                .body(temporary);
+                .build();
     }
 
 }

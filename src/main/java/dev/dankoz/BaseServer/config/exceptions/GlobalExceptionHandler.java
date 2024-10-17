@@ -20,6 +20,7 @@ import static org.springframework.http.HttpStatus.*;
 public class GlobalExceptionHandler {
 
     private final int JWT_EXPIRED = 461;
+    private final int REFRESH_TOKEN_ERROR = 462;
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<?> badCredentials(BadCredentialsException exception, WebRequest request) throws  JsonProcessingException {
@@ -50,6 +51,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<?> expiredToken(ExpiredJwtException exception, WebRequest request) throws  JsonProcessingException {
         return new ResponseEntity<>(parseToJson(exception.getMessage(),JWT_EXPIRED), UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<?> refreshToken(RefreshTokenException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(),UNAUTHORIZED.value()), UNAUTHORIZED);
     }
 
     private String parseToJson(String message, int code) throws JsonProcessingException {
