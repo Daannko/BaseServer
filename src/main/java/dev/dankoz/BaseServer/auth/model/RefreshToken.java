@@ -26,6 +26,7 @@ public class RefreshToken {
     private String value;
     private Date expire;
     private boolean used;
+    private boolean valid;
 
     public RefreshToken() {
 

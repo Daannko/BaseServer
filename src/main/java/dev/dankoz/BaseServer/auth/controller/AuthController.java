@@ -32,4 +32,8 @@ import org.springframework.web.bind.annotation.*;
     public ResponseEntity<?> refresh(HttpServletRequest request){
         return authService.refresh(request);
     }
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        return authService.logout(request);
+    }
 }

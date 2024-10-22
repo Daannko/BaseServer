@@ -65,6 +65,7 @@ public class TokenService {
                 .value(Base64.getEncoder().withoutPadding().encodeToString(token))
                 .expire(new Date(System.currentTimeMillis() + expiration))
                 .used(false)
+                .valid(true)
                 .build();
     }
 

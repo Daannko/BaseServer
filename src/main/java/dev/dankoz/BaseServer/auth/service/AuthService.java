@@ -103,7 +103,9 @@ public class AuthService {
         RefreshToken oldRefreshToken = refreshTokenRepository.findByValue(cookie.get().getValue())
                 .orElseThrow(() -> new RefreshTokenException("No record of token!"));
 
-        if (oldRefreshToken.isUsed()){
+        if(!oldRefreshToken.isValid()){
+            throw new RefreshTokenException("Token in no longer valid!");
+        } else if (oldRefreshToken.isUsed()){
             //TODO: Add some logging, this acction in prod witll mean that user was propably compromised.
             throw new RefreshTokenException("Token already used!");
         } else if (oldRefreshToken.isExpired()) {
@@ -147,4 +149,31 @@ public class AuthService {
                 .build();
     }
 
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null){
+            Optional<Cookie> cookie = Arrays.stream(cookies).filter(e -> e.getName().equals("refreshToken")).findFirst();
+            cookie.ifPresent(value -> this.refreshTokenRepository.revokeRequestToken(value.getValue()));
+        }
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("jwtToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge( Duration.ofSeconds(5))
+                .sameSite("Lax")
+                .build();
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge( Duration.ofSeconds(5))
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity.noContent()
+              .header("Set-Cookie",accessTokenCookie.toString())
+              .header("Set-Cookie",refreshTokenCookie.toString())
+              .build();
+    }
 }
