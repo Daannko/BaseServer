@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
     public ResponseEntity<?> register(@RequestBody RegisterRequestDto registerRequestDto){
         return authService.register(registerRequestDto);
     }
-    @PostMapping("/token")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto){
         return authService.token(loginRequestDto);
     }

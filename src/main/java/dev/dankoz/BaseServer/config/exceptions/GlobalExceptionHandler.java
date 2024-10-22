@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import dev.dankoz.BaseServer.general.dto.ExceptionResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,6 +49,7 @@ public class GlobalExceptionHandler {
 //
 //    }
 
+
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<?> expiredToken(ExpiredJwtException exception, WebRequest request) throws  JsonProcessingException {
         return new ResponseEntity<>(parseToJson(exception.getMessage(),JWT_EXPIRED), UNAUTHORIZED);
@@ -55,7 +57,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RefreshTokenException.class)
     public ResponseEntity<?> refreshToken(RefreshTokenException exception, WebRequest request) throws  JsonProcessingException {
-        return new ResponseEntity<>(parseToJson(exception.getMessage(),UNAUTHORIZED.value()), UNAUTHORIZED);
+        return new ResponseEntity<>(parseToJson(exception.getMessage(),REFRESH_TOKEN_ERROR), HttpStatusCode.valueOf(REFRESH_TOKEN_ERROR));
     }
 
     private String parseToJson(String message, int code) throws JsonProcessingException {

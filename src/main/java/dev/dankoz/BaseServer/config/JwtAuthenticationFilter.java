@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -32,6 +33,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         this.tokenService = tokenService;
         this.userDetailsService = userDetailsService;
         this.handlerExceptionResolver = handlerExceptionResolver;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String[] excludedPaths = new String[] {"auth/login","auth/register","auth/refresh"};
+        return Arrays.stream(excludedPaths)
+                .anyMatch(e -> new AntPathMatcher().match(e,request.getServletPath()));
     }
 
     @Override
