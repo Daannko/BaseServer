@@ -3,7 +3,7 @@ package dev.dankoz.BaseServer.auth.service;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
 import dev.dankoz.BaseServer.general.model.User;
-import dev.dankoz.BaseServer.config.RsaKeyProperties;
+import dev.dankoz.BaseServer.config.properties.RsaKeyProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

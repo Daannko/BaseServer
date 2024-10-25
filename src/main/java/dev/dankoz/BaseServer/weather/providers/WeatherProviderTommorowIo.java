@@ -1,30 +1,46 @@
 package dev.dankoz.BaseServer.weather.providers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import dev.dankoz.BaseServer.config.ApiKeysProperties;
+import dev.dankoz.BaseServer.config.properties.ApiKeysProperties;
+import dev.dankoz.BaseServer.service.HttpService;
 import dev.dankoz.BaseServer.weather.Weather;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 import java.util.Date;
 import java.util.HashMap;
 
-@Component
+
 public class WeatherProviderTommorowIo implements WeatherProvider{
     private final ApiKeysProperties apiKeysProperties;
-    private final String apiURL = "https://api.tomorrow.io/v4/weather/realtime?location=%f,%f&apikey=%s";
+    private final HttpService httpService;
 
-   public WeatherProviderTommorowIo( ApiKeysProperties apiKeysProperties) {
+   public WeatherProviderTommorowIo(ApiKeysProperties apiKeysProperties, HttpService httpService) {
        this.apiKeysProperties = apiKeysProperties;
+       this.httpService = httpService;
    }
 
-    public Weather getWeather(){
-        return Weather.builder()
-                .date(new Date(System.currentTimeMillis()))
-                .description(mapWeatherCode(jsonNode.get("weatherCode").asText()))
-                .temperature(jsonNode.get("temperature").floatValue())
-                .windSpeed(jsonNode.get("windSpeed").floatValue())
-                .pressure(jsonNode.get("pressureSurfaceLevel").floatValue())
-                .build();
+    public Weather getWeather(float lat, float  lon) {
+        String apiURL = String.format("https://api.tomorrow.io/v4/weather/realtime?location=%f,%f&apikey=%s",lat,lon,apiKeysProperties.tommorowApiKey());
+        JsonNode node = httpService.get(apiURL);
+        node = node.get("data");
+        if(node == null) return null;
+        try {
+            return Weather.builder()
+                    .date(new Date(System.currentTimeMillis()))
+                    .weatherCode(node.get("values").get("weatherCode").intValue())
+                    .description(mapWeatherCode(node.get("values").get("weatherCode").asText()))
+                    .temperature(node.get("values").get("temperature").floatValue())
+                    .windSpeed(node.get("values").get("windSpeed").floatValue())
+                    .pressure(node.get("values").get("pressureSurfaceLevel").floatValue())
+                    .lat(lat)
+                    .lon(lon)
+                    .build();
+        }catch (Exception e){
+            return null;
+        }
+
     }
 
     private String mapWeatherCode(String code){

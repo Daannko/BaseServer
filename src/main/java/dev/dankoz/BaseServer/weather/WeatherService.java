@@ -3,15 +3,16 @@ package dev.dankoz.BaseServer.weather;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import dev.dankoz.BaseServer.config.ApiKeysProperties;
+import dev.dankoz.BaseServer.config.properties.ApiKeysProperties;
+import dev.dankoz.BaseServer.service.HttpService;
+import dev.dankoz.BaseServer.weather.providers.WeatherProviderTommorowIo;
+import org.hibernate.Hibernate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
 public class WeatherService {
@@ -19,28 +20,35 @@ public class WeatherService {
 
     private final ApiKeysProperties apiKeysProperties;
 
+    private final HttpService httpService;
 
 
-    public WeatherService(WeatherRepository weatherRepository, ApiKeysProperties apiKeysProperties) {
+    public WeatherService(WeatherRepository weatherRepository, ApiKeysProperties apiKeysProperties, HttpService httpService) {
         this.weatherRepository = weatherRepository;
         this.apiKeysProperties = apiKeysProperties;
+        this.httpService = httpService;
     }
 
-    public ResponseEntity<?> getWeather(float lat, float lon, String location) {
+    @SuppressWarnings("all")
+    public ResponseEntity<?> getWeather(float lat, float lon,  Optional<String> location) {
+        String loc = location.orElse(String.format("Lat:%f Lon:%f",lat,lon));
 
-        Weather weather;
-        weather = loadWeatherFromLocation(location);
-        if(weather == null) weather = loadWeatherFromCords(lat,lon);
-
+        Weather weather = null;
+        if(location.isPresent()){
+            weather = loadWeatherFromLocation(location.get());
+        }
+        if(weather == null){
+            weather = loadWeatherFromCords(lat,lon);
+        }
         if(weather != null){
             return ResponseEntity.ok().body(weather);
         }
 
-        getWeatherFromTommorowIo(lat,lon);
+        weather = new WeatherProviderTommorowIo(apiKeysProperties,httpService).getWeather(lat,lon);
 
-
-
-        return ResponseEntity.ok().body("");
+        weather.setLocationName(loc);
+        weatherRepository.save(weather);
+        return ResponseEntity.ok().body(weather);
     }
 
     private Weather loadWeatherFromLocation(String location){
@@ -61,8 +69,12 @@ public class WeatherService {
             // Check if the weather is at least from last hour
             return weather.getDate().before(new Date(System.currentTimeMillis() - 1000 * 60 * 60)) ? null : weather;
         }
+
+        List<Weather> allWeathers = weatherRepository
+                .getAllRecent(new Date(System.currentTimeMillis() - 1000 * 60 * 60));
+
+
         // Check if there is a location within DISTANCE LIMIT kilometers
-        List<Weather> allWeathers = weatherRepository.getAll();
         double lat1Rad = Math.toRadians(lat);
         double lon1Rad = Math.toRadians(lon);
         int EARTH_RADIUS = 6371;
@@ -77,40 +89,11 @@ public class WeatherService {
 
             double distance = Math.sqrt(x * x + y * y) * EARTH_RADIUS;
             if (distance < DISTANCE_LIMIT) {
-                weather = weatherRepository.getById(allWeather.getId());
-                if (weather.getDate().before(new Date(System.currentTimeMillis() - 1000 * 60 * 60))) {
-                    break;
-                }
+
+                return (Weather) Hibernate.unproxy(weatherRepository.getById(allWeather.getId()));
             }
         }
-        return weather;
-    }
-
-    public Weather getWeatherFromTommorowIo(float lat,float lon) throws JsonProcessingException {
-
-
-
-
-
-
-
-
-
-
-
-        RestClient customClient = RestClient.builder().build();
-        String response = customClient.get()
-                .uri(String.format(apiURL,lat,lon,apiKEY))
-                .retrieve()
-                .body(String.class);
-        JsonNode jsonNode = new ObjectMapper().reader().readTree(response).get("data").get("values");
-
-
         return null;
-    }
-
-    private String mapDescriptionCode(String code){
-
     }
 
 }
