@@ -89,7 +89,6 @@ public class WeatherService {
 
             double distance = Math.sqrt(x * x + y * y) * EARTH_RADIUS;
             if (distance < DISTANCE_LIMIT) {
-
                 return (Weather) Hibernate.unproxy(weatherRepository.getById(allWeather.getId()));
             }
         }
