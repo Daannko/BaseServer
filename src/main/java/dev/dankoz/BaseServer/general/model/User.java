@@ -2,6 +2,7 @@ package dev.dankoz.BaseServer.general.model;
 
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
+import dev.dankoz.BaseServer.todo.ToDo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,6 +43,9 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Permission> permissions;
+
+    @OneToMany(mappedBy = "author",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)
+    private Set<ToDo> todos;
 
     public User() {
 
