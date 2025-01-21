@@ -70,4 +70,6 @@ public class ToDo {
     public int getPriority() {
         return priority;
     }
+
+    public String getTitle(){return title;}
 }

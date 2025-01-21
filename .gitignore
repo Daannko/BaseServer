@@ -34,3 +34,4 @@ build/
 
 src/main/resources/certs/*
 src/main/resources/env.properties
+src/main/resources/google/*

@@ -107,13 +107,12 @@ public class AuthService {
             throw new RefreshTokenException("Token in no longer valid!");
         } else if (oldRefreshToken.isUsed()){
             //TODO: Add some logging, this acction in prod witll mean that user was propably compromised.
+            //TODO: Fix this if you refresh either the token is not being send or front is not changeing its value.
             throw new RefreshTokenException("Token already used!");
         } else if (oldRefreshToken.isExpired()) {
             throw new RefreshTokenException("Token expired!");
         }
-
-        oldRefreshToken.use();
-        refreshTokenRepository.save(oldRefreshToken);
+        refreshTokenRepository.delete(oldRefreshToken);
 
         return getTokenResponse(oldRefreshToken.getUser());
     }

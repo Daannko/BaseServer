@@ -30,12 +30,13 @@ public class ToDoService {
                 .author(user)
                 .expires(request.expires())
                 .text(request.text())
+                .title(request.title())
                 .priority(request.priority())
                 .created(new Date())
                 .build();
 
         toDoRepository.save(newToDo);
-        return ResponseEntity.ok("Added task!");
+        return ResponseEntity.ok(toDoRepository.save(newToDo));
     }
 
     protected ResponseEntity<?> getMyToDos(){
