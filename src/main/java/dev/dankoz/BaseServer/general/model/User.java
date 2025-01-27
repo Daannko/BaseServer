@@ -2,6 +2,7 @@ package dev.dankoz.BaseServer.general.model;
 
 import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
+import dev.dankoz.BaseServer.google.auth.GoogleUser;
 import dev.dankoz.BaseServer.todo.ToDo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,8 @@ public class User implements UserDetails {
     private Date lastSeen;
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<RefreshToken> refreshTokens;
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,orphanRemoval = true)
+    private Set<GoogleUser> googleAccounts;
 
     @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     @JoinTable(

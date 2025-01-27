@@ -23,8 +23,13 @@ public class GoogleOAuth2Controller {
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<String> handleOAuth2Callback(@RequestBody GoogleOAuth2Request request) throws Exception {
+    public ResponseEntity<?> handleOAuth2Callback(@RequestBody GoogleOAuth2Request request) throws Exception {
         return googleCalendarService.saveTokens(request);
+    }
+
+    @GetMapping("/accounts")
+    public ResponseEntity<?> handleOAuth2Callback() throws Exception {
+        return googleCalendarService.getMyAccounts();
     }
 
 }

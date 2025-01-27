@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/register","/auth/refresh").permitAll()
                         .requestMatchers("/basic").hasAuthority("PERMISSION_BASIC")
                         .requestMatchers("/todo").hasAuthority("PERMISSION_BASIC")
-                        .requestMatchers("/google/auth","/google/callback").hasAuthority("PERMISSION_BASIC")
+                        .requestMatchers("/google/*").hasAuthority("PERMISSION_BASIC")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
