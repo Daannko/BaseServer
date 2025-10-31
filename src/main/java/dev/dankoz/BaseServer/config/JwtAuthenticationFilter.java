@@ -22,6 +22,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter
@@ -29,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
     private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final Set<String> excludedPaths = Set.of("/auth/login","/auth/register","/auth/refresh");
 
     public JwtAuthenticationFilter(TokenService tokenService, UserDetailsService userDetailsService, HandlerExceptionResolver handlerExceptionResolver) {
         this.tokenService = tokenService;
@@ -38,9 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String[] excludedPaths = new String[] {"/auth/login","/auth/register","/auth/refresh"};
-        return Arrays.stream(excludedPaths)
-                .anyMatch(e -> new AntPathMatcher().match(e,request.getServletPath()));
+
+        return excludedPaths.contains(request.getServletPath());
     }
 
     @Override
