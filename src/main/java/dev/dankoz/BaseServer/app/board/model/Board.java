@@ -23,7 +23,7 @@ public class Board {
     private Integer id;
     private String name;
     private String description;
-    private Long authorId;
+    private Integer authorId;
 
     @DBRef  
     private Set<Topic> topics;
