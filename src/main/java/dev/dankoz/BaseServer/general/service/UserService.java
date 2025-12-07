@@ -18,10 +18,15 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-
     public User getUserById(Integer id){
         return userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found!"));
+    }
+
+    public User getCurrentUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return getUserByEmail(email);
     }
 
     public User getUserByEmail(String email){

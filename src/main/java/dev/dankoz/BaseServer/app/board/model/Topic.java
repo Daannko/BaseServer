@@ -24,15 +24,10 @@ public class Topic {
     private String title;
     private String content;
     private Long tier;
-    private Type type;
-    private Long authorId;
     private Board board;
 
     @DBRef
     private List<Topic> relatedTopics;
-    public enum Type{
-        MAIN,CONNECTOR
-    }
 
 }   
 

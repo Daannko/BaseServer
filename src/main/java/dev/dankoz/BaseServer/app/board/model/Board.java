@@ -5,16 +5,17 @@ import java.util.Set;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.google.auto.value.AutoValue.Builder;
-
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Builder
 @Getter
 @Setter
-@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "boards")
 public class Board {

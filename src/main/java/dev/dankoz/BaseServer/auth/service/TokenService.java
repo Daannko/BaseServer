@@ -19,12 +19,10 @@ import java.util.*;
 public class TokenService {
 
     private final RsaKeyProperties rsaKeyProperties;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenService(RsaKeyProperties rsaKeyProperties,
                         RefreshTokenRepository refreshTokenRepository) {
         this.rsaKeyProperties = rsaKeyProperties;
-        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public String generateJWT(String email,String password){
