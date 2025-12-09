@@ -5,6 +5,7 @@ import dev.dankoz.BaseServer.auth.model.Permission;
 import dev.dankoz.BaseServer.auth.model.RefreshToken;
 import dev.dankoz.BaseServer.auth.repository.PermissionRepository;
 import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
+import dev.dankoz.BaseServer.config.Permissions;
 import dev.dankoz.BaseServer.config.exceptions.EmailAlreadyExistsException;
 import dev.dankoz.BaseServer.config.exceptions.RefreshTokenException;
 import dev.dankoz.BaseServer.general.model.User;
@@ -52,7 +53,7 @@ public class AuthService {
             throw new EmailAlreadyExistsException("User with this email already exists");
         }
 
-        Permission permission = permissionRepository.findByName("PERMISSION_BASIC")
+        Permission permission = permissionRepository.findByName(Permissions.PERMISSION_BASIC.getName())
                 .orElseThrow();
 
         User user = User.builder()
@@ -106,8 +107,6 @@ public class AuthService {
         if(!oldRefreshToken.isValid()){
             throw new RefreshTokenException("Token in no longer valid!");
         } else if (oldRefreshToken.isUsed()){
-            //TODO: Add some logging, this acction in prod witll mean that user was propably compromised.
-            //TODO: Fix this if you refresh either the token is not being send or front is not changeing its value.
             throw new RefreshTokenException("Token already used!");
         } else if (oldRefreshToken.isExpired()) {
             throw new RefreshTokenException("Token expired!");

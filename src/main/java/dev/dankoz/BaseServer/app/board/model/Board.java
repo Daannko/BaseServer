@@ -21,11 +21,18 @@ import lombok.Setter;
 public class Board {
 
     @Id
-    private Integer id;
+    private String id;
     private String name;
     private String description;
     private Integer authorId;
 
-    @DBRef  
-    private Set<Topic> topics;
+    private Set<String> topics;
+
+    public void addTopic(String topic){
+        this.topics.add(topic);
+    }
+
+    public void removeTopic(String topic){
+        this.topics.remove(topic);
+    }
 }

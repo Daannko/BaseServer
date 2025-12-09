@@ -42,9 +42,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize  -> authorize
                         .requestMatchers("/auth/login", "/auth/register","/auth/refresh").permitAll()
-                        .requestMatchers("/basic").hasAuthority("PERMISSION_BASIC")
-                        .requestMatchers("/todo").hasAuthority("PERMISSION_BASIC")
-                        .requestMatchers("/google/*").hasAuthority("PERMISSION_BASIC")
+                        .requestMatchers("/basic").hasAuthority(Permissions.PERMISSION_BASIC.getName())
+                        .requestMatchers("/todo").hasAuthority(Permissions.PERMISSION_BASIC.getName())
+                        .requestMatchers("/google/*").hasAuthority(Permissions.PERMISSION_BASIC.getName())
+                        .requestMatchers("/board","/board/*").hasAnyAuthority(Permissions.PERMISSION_BASIC.getName())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

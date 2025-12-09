@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 import dev.dankoz.BaseServer.app.board.model.Board;
 
 @Repository
-public interface BoardRepository extends MongoRepository<Board,Integer> {
+public interface BoardRepository extends MongoRepository<Board,String> {
 
     List<Board> findAllByAuthorId(Integer authorId);
-    Optional<Board> findById(Integer boardId);
+    Optional<Board> findById(String boardId);
 
 }

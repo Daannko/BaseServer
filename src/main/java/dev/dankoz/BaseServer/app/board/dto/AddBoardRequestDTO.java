@@ -1,4 +1,4 @@
-package dev.dankoz.BaseServer.app.board.controller.dto;
+package dev.dankoz.BaseServer.app.board.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

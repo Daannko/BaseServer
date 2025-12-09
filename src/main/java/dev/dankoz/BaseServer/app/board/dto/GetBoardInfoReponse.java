@@ -1,7 +1,7 @@
-package dev.dankoz.BaseServer.app.board.controller.dto;
+package dev.dankoz.BaseServer.app.board.dto;
 
 public record GetBoardInfoReponse(
-    Integer id,
+    String id,
     String name,
     String description
 ) {}

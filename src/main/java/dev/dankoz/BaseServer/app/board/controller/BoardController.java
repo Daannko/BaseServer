@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import dev.dankoz.BaseServer.app.board.controller.dto.AddBoardRequestDTO;
-import dev.dankoz.BaseServer.app.board.controller.dto.BoardDTOMapper;
-import dev.dankoz.BaseServer.app.board.controller.dto.GetBoardInfoReponse;
-import dev.dankoz.BaseServer.app.board.controller.dto.UpdateBoardRequestDTO;
+
+import dev.dankoz.BaseServer.app.board.dto.AddBoardRequestDTO;
+import dev.dankoz.BaseServer.app.board.dto.BoardDTOMapper;
+import dev.dankoz.BaseServer.app.board.dto.GetBoardInfoReponse;
+import dev.dankoz.BaseServer.app.board.dto.UpdateBoardRequestDTO;
 import dev.dankoz.BaseServer.app.board.model.Board;
 import dev.dankoz.BaseServer.app.board.service.BoardService;
 import dev.dankoz.BaseServer.general.service.UserService;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@RestController
+@RestController()
 @RequestMapping("/board")
 public class BoardController {
 
@@ -43,7 +44,7 @@ public class BoardController {
     }
 
     @DeleteMapping("/{id}")
-    public void removeBoard(@PathVariable Integer id){
+    public void removeBoard(@PathVariable String id){
         boardService.removeBoard(id, getUserId());
     }
 
@@ -61,16 +62,11 @@ public class BoardController {
     }
 
     @GetMapping("/{id}")
-    public String getBoard(@RequestParam String param) {
-        return new String();
+    public Board getBoard(@PathVariable String id) {
+        return boardService.getBoard(id, getUserId());
     }
     
-    
-    
-
-
     private Integer getUserId(){
         return userService.getCurrentUser().getId();
     }
-
 }

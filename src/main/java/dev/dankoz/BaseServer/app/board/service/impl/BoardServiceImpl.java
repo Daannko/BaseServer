@@ -35,12 +35,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void updateBoard(Integer boardId, String name, String desc, Integer userId) {
-        Optional<Board> optionalBoard = boardRepository.findByAuthorIdAndId(userId,boardId);
-        if(optionalBoard.isEmpty() || optionalBoard.get().getAuthorId() != userId){
-            throw new UnauthorizedException("The board does not exist or you do not have access to it");
-        }
-        Board board = optionalBoard.get();
+    public void updateBoard(String boardId, String name, String desc, Integer userId) {
+        Board board = getBoard(boardId, userId);
         if(name!= null && name.trim().length() != 0){
             board.setName(name);
         }
@@ -50,12 +46,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void removeBoard(Integer boardId, Integer userId) {
-        Optional<Board> optionalBoard = boardRepository.findById(boardId);
-        if(optionalBoard.isEmpty() || optionalBoard.get().getAuthorId() != userId){
-            throw new UnauthorizedException("The board does not exist or you do not have access to it");
-        }
-        boardRepository.delete(optionalBoard.get());
+    public void removeBoard(String boardId, Integer userId) {
+        boardRepository.deleteById(getBoard(boardId, userId).getId());
     }
 
     @Override
@@ -63,6 +55,24 @@ public class BoardServiceImpl implements BoardService {
         return boardRepository.findAllByAuthorId(authorId);
     }
 
+
+    @Override
+    public Board getBoard(String boardId, Integer userId) {
+        Optional<Board> optionalBoard = boardRepository.findById(boardId);
+        if(optionalBoard.isEmpty() || optionalBoard.get().getAuthorId() != userId){
+            throw new UnauthorizedException("The board does not exist or you do not have access to it");
+        }
+        return optionalBoard.get();
+    }
+
+
+    @Override
+    public Board saveBoard(Board board) {
+        boardRepository.save(board);
+        return null;
+    }
+
+    
     
 
     

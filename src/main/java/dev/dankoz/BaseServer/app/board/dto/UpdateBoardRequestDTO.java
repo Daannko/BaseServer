@@ -1,4 +1,4 @@
-package dev.dankoz.BaseServer.app.board.controller.dto;
+package dev.dankoz.BaseServer.app.board.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -8,7 +8,7 @@ public record UpdateBoardRequestDTO(
 
     @NotNull(message = "Board ID is required")
     @Positive(message = "Board ID must be positive")
-    Integer boardId,
+    String boardId,
 
     @Size(max = 255, message = "Board name is too long")
     String name,

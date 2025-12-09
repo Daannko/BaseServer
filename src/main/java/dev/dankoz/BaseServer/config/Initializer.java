@@ -35,7 +35,7 @@ public class Initializer {
                     .email("user@user.com")
                     .createdAt(new Date(System.currentTimeMillis()))
                     .password(bCryptPasswordEncoder.encode("pass"))
-                    .permissions(new HashSet<>(List.of(new Permission("PERMISSION_BASIC"))))
+                    .permissions(new HashSet<>(List.of(new Permission(Permissions.PERMISSION_BASIC.getName()))))
                     .enabled(true)
                     .build();
 
