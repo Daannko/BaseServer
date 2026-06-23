@@ -9,6 +9,10 @@ public record AddBoardRequestDTO(
     String name,
 
     @Size(max = 1000, message = "Board name is too long")
-    String description 
+    String description,
+
+    Integer width,
+    Integer height
+
 
 ) {}

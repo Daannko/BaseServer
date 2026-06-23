@@ -38,6 +38,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(parseToJson(exception.getMessage(), CONFLICT.value()), CONFLICT);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<?> unauthorized(UnauthorizedException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), UNAUTHORIZED.value()), UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> badRequest(BadRequestException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), BAD_REQUEST.value()), BAD_REQUEST);
+    }
+
 //    @ExceptionHandler(RuntimeException.class)
 //    public ResponseEntity<?> serverError(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
 //        try{

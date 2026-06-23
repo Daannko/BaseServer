@@ -2,10 +2,9 @@ package dev.dankoz.BaseServer.app.board.model;
 
 import java.util.Set;
 
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +24,13 @@ public class Board {
     private String name;
     private String description;
     private Integer authorId;
+
+    /** Canvas dimensions. */
+    private Integer width;
+    private Integer height;
+
+    /** Last camera position; null until the client persists one. */
+    private Camera camera;
 
     private Set<String> topics;
 

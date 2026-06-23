@@ -5,10 +5,10 @@ services:
       dockerfile: Dockerfile
     container_name: backend-app
     depends_on:
-      - db
+      - postgres
       - mongo # Add MongoDB as a dependency
     ports:
-      - "8080:8080"
+      - "8080:8080" 
       - "5005:5005" #for debuging
     networks:
       - app-network
@@ -16,8 +16,8 @@ services:
       - ./BaseServer:/app/src
     command: mvn spring-boot:run
 
-  db:
-    image: 'postgres:latest'
+  postgres:
+    image: postgres:18
     environment:
       - POSTGRES_DB=mydatabase
       - POSTGRES_PASSWORD=secret
@@ -25,7 +25,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/
     networks:
       - app-network
 
@@ -33,7 +33,7 @@ services:
     image: 'mongo:latest'
     container_name: mongo
     ports:
-      - '27017:27017'
+      - '37017:27017'
     networks:
       - app-network
     volumes:

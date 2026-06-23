@@ -1,6 +1,8 @@
 package dev.dankoz.BaseServer.config;
 
 import dev.dankoz.BaseServer.config.properties.RsaKeyProperties;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -23,8 +25,10 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final RsaKeyProperties rsaKeys;
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
+    private final RsaKeyProperties rsaKeys;
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -45,7 +49,9 @@ public class SecurityConfig {
                         .requestMatchers("/basic").hasAuthority(Permissions.PERMISSION_BASIC.getName())
                         .requestMatchers("/todo").hasAuthority(Permissions.PERMISSION_BASIC.getName())
                         .requestMatchers("/google/*").hasAuthority(Permissions.PERMISSION_BASIC.getName())
-                        .requestMatchers("/board","/board/*").hasAnyAuthority(Permissions.PERMISSION_BASIC.getName())
+                        .requestMatchers("/media/**").permitAll()
+                        .requestMatchers("/board","/board/**").hasAnyAuthority(Permissions.PERMISSION_BASIC.getName())
+                        .requestMatchers("/note/**","/section/**","/image/**","/drawing/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -53,12 +59,14 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+    
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With","Origin", "responseType"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

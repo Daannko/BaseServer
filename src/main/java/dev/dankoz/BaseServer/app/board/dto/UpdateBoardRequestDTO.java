@@ -1,21 +1,23 @@
 package dev.dankoz.BaseServer.app.board.dto;
 
-import jakarta.validation.constraints.NotNull;
+import dev.dankoz.BaseServer.app.board.model.Camera;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+/** Partial update. {@code id} comes from the PATCH path, not the body. */
 public record UpdateBoardRequestDTO(
-
-    @NotNull(message = "Board ID is required")
-    @Positive(message = "Board ID must be positive")
-    String boardId,
-
     @Size(max = 255, message = "Board name is too long")
     String name,
 
-    @Size(max = 1000, message = "Board name is too long")
-    String description 
+    @Size(max = 1000, message = "Board description is too long")
+    String description,
 
+    @Positive
+    Integer width,
+
+    @Positive
+    Integer height,
+
+    Camera camera
 ) {
-
 }

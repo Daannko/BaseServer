@@ -41,7 +41,7 @@ public class TokenService {
 
         claims.put("permissions",permissions);
 
-        long expiration = 1000 * 60  * 30; // 30 minutes
+        long expiration = 1000 * 60 * 60 * 6; // 6 hours
         return   Jwts.builder()
                 .setClaims(claims)
                 .setSubject(authentication.getName())
@@ -56,7 +56,7 @@ public class TokenService {
         SecureRandom secureRandom = new SecureRandom();
         secureRandom.nextBytes(token);
 
-        long expiration = 1000 * 60  * 60 * 24;
+        long expiration = 1000 * 60 * 60 * 6; // 6 hours
 
         return RefreshToken.builder()
                 .user(user)
