@@ -126,7 +126,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofHours(6))
+                .maxAge(Duration.ofHours(24))
                 .sameSite("Lax")
                 .build();
 
@@ -134,7 +134,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge( Duration.ofHours(6))
+                .maxAge( Duration.ofHours(24))
                 .sameSite("Lax")
                 .build();
 

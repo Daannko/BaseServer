@@ -116,6 +116,9 @@ public class ElementServiceImpl implements ElementService {
                 req.zIndex(), req.bgColor(), req.borderColor(), req.borderWidth());
         if (req.content() != null && !req.content().isEmpty()) {
             e.setContent(req.content());
+            // Content changed => any extracted topic tags are stale; wipe so they're re-extracted on demand.
+            e.setTags(null);
+            e.setTagsHash(null);
         }
         if (req.fontSize() != null) {
             e.setFontSize(req.fontSize());

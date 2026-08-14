@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/media/**").permitAll()
                         .requestMatchers("/board","/board/**").hasAnyAuthority(Permissions.PERMISSION_BASIC.getName())
                         .requestMatchers("/note/**","/section/**","/image/**","/drawing/**").authenticated()
+                        .requestMatchers("/ai","/ai/**").hasAuthority(Permissions.PERMISSION_BASIC.getName())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

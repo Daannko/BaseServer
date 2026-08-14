@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(parseToJson(exception.getMessage(), BAD_REQUEST.value()), BAD_REQUEST);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> notFound(NotFoundException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), NOT_FOUND.value()), NOT_FOUND);
+    }
+
 //    @ExceptionHandler(RuntimeException.class)
 //    public ResponseEntity<?> serverError(RuntimeException exception, WebRequest request) throws  JsonProcessingException {
 //        try{
