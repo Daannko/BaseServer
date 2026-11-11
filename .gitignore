@@ -37,3 +37,6 @@ src/main/resources/env.properties
 src/main/resources/google/*
 # Local board image store
 /uploads/
+
+# Backup of src/main/resources with keys and secrets: never commit
+src/main/resources.zip
