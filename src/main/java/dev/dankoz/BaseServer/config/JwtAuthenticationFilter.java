@@ -50,11 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         Cookie[] cookies = request.getCookies();
         if(cookies == null){
             handlerExceptionResolver.resolveException(request,response,null,new BadCredentialsException("No cookies found!"));
+            return;
         }
 
         Optional<Cookie> cookie = Arrays.stream(cookies).filter(e -> e.getName().equals("jwtToken")).findFirst();
         if(cookie.isEmpty()){
             handlerExceptionResolver.resolveException(request,response,null,new BadCredentialsException("JWT not found!"));
+            return;
         }
 
         String jwt = cookie.get().getValue();
@@ -64,6 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
              email = tokenService.extractUsername(jwt);
         }catch (ExpiredJwtException e){
             handlerExceptionResolver.resolveException(request,response,null,new ExpiredJwtException(e.getHeader(),e.getClaims(),"JWT Token expired"));
+            return;
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

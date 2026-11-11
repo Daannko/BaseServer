@@ -1,5 +1,6 @@
 package dev.dankoz.BaseServer.ai.usage.repository;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +23,13 @@ public interface TokenUsageRepository extends JpaRepository<TokenUsageRecord, Lo
             where t.userId = :userId
             """)
     List<Object[]> totalsForUser(@Param("userId") Integer userId);
+
+    @Query("""
+            select coalesce(sum(t.totalTokens), 0)
+            from TokenUsageRecord t
+            where t.userId = :userId and t.createdAt >= :since
+            """)
+    long sumTotalSince(@Param("userId") Integer userId, @Param("since") Instant since);
 
     /** Rows of [feature, sumTotal, requestCount]. */
     @Query("""

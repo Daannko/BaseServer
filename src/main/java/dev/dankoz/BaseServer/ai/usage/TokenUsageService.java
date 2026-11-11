@@ -1,8 +1,10 @@
 package dev.dankoz.BaseServer.ai.usage;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import dev.dankoz.BaseServer.ai.dto.ChatResponse;
@@ -11,15 +13,27 @@ import dev.dankoz.BaseServer.ai.usage.dto.UsageBucket;
 import dev.dankoz.BaseServer.ai.usage.dto.UsageResponse;
 import dev.dankoz.BaseServer.ai.usage.model.TokenUsageRecord;
 import dev.dankoz.BaseServer.ai.usage.repository.TokenUsageRepository;
+import dev.dankoz.BaseServer.config.exceptions.AiLimitExceededException;
 
 /** Records per-request token usage and reports per-user totals. */
 @Service
 public class TokenUsageService {
 
     private final TokenUsageRepository repository;
+    private final long dailyTokenLimit;
 
-    public TokenUsageService(TokenUsageRepository repository) {
+    public TokenUsageService(TokenUsageRepository repository,
+                             @Value("${app.ai.daily-token-limit}") long dailyTokenLimit) {
         this.repository = repository;
+        this.dailyTokenLimit = dailyTokenLimit;
+    }
+
+    /** Rejects the call when the user spent the limit in the last 24 hours. */
+    public void assertWithinDailyLimit(Integer userId) {
+        Instant since = Instant.now().minus(Duration.ofDays(1));
+        if (repository.sumTotalSince(userId, since) >= dailyTokenLimit) {
+            throw new AiLimitExceededException("Daily AI limit reached, try again later");
+        }
     }
 
     /** Persist usage from a completed AI call. No-ops when usage/user is missing. */

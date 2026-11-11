@@ -38,6 +38,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(parseToJson(exception.getMessage(), CONFLICT.value()), CONFLICT);
     }
 
+    @ExceptionHandler(RegistrationClosedException.class)
+    public ResponseEntity<?> registrationClosed(RegistrationClosedException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), FORBIDDEN.value()), FORBIDDEN);
+    }
+
+    @ExceptionHandler(AiLimitExceededException.class)
+    public ResponseEntity<?> aiLimitExceeded(AiLimitExceededException exception, WebRequest request) throws  JsonProcessingException {
+        return new ResponseEntity<>(parseToJson(exception.getMessage(), TOO_MANY_REQUESTS.value()), TOO_MANY_REQUESTS);
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<?> unauthorized(UnauthorizedException exception, WebRequest request) throws  JsonProcessingException {
         return new ResponseEntity<>(parseToJson(exception.getMessage(), UNAUTHORIZED.value()), UNAUTHORIZED);

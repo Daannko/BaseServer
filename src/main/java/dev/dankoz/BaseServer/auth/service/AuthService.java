@@ -7,12 +7,14 @@ import dev.dankoz.BaseServer.auth.repository.PermissionRepository;
 import dev.dankoz.BaseServer.auth.repository.RefreshTokenRepository;
 import dev.dankoz.BaseServer.config.Permissions;
 import dev.dankoz.BaseServer.config.exceptions.EmailAlreadyExistsException;
+import dev.dankoz.BaseServer.config.exceptions.RegistrationClosedException;
 import dev.dankoz.BaseServer.config.exceptions.RefreshTokenException;
 import dev.dankoz.BaseServer.general.model.User;
 import dev.dankoz.BaseServer.general.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +39,12 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PermissionRepository permissionRepository;
 
+    @Value("${app.auth.registration-enabled}")
+    private boolean registrationEnabled;
+
+    @Value("${app.auth.secure-cookies}")
+    private boolean secureCookies;
+
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager, RefreshTokenRepository refreshTokenRepository, PermissionRepository permissionRepository) {
         this.userRepository = userRepository;
@@ -48,6 +56,10 @@ public class AuthService {
     }
 
     public ResponseEntity<?> register(RegisterRequestDto registerRequestDto) {
+
+        if(!registrationEnabled){
+            throw new RegistrationClosedException("Registration is closed");
+        }
 
         if(userRepository.countByEmail(registerRequestDto.email()) != 0){
             throw new EmailAlreadyExistsException("User with this email already exists");
@@ -121,20 +133,20 @@ public class AuthService {
         String jwt = tokenService.generateJWT(user);
         RefreshToken refreshToken = tokenService.generateRefreshToken(user);
 
-        //TODO: After localhost change change secure to true and "Lax" to "Strict"
+        //TODO: After localhost change change "Lax" to "Strict"
         ResponseCookie accessTokenCookie = ResponseCookie.from("jwtToken", jwt)
                 .httpOnly(true)
-                .secure(false)
+                .secure(secureCookies)
                 .path("/")
-                .maxAge(Duration.ofHours(24))
+                .maxAge(Duration.ofDays(30))
                 .sameSite("Lax")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken.getValue())
                 .httpOnly(true)
-                .secure(false)
+                .secure(secureCookies)
                 .path("/")
-                .maxAge( Duration.ofHours(24))
+                .maxAge(Duration.ofDays(30))
                 .sameSite("Lax")
                 .build();
 
@@ -156,14 +168,14 @@ public class AuthService {
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("jwtToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(secureCookies)
                 .path("/")
                 .maxAge( Duration.ofSeconds(5))
                 .sameSite("Lax")
                 .build();
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(secureCookies)
                 .path("/")
                 .maxAge( Duration.ofSeconds(5))
                 .sameSite("Lax")

@@ -56,7 +56,9 @@ public class TokenService {
         SecureRandom secureRandom = new SecureRandom();
         secureRandom.nextBytes(token);
 
-        long expiration = 1000 * 60 * 60 * 6; // 6 hours
+        // Must outlive the JWT, or the refresh fails exactly when it is needed.
+        // Every refresh issues a new token, so this is 30 days of not using the app.
+        long expiration = 1000L * 60 * 60 * 24 * 30; // 30 days
 
         return RefreshToken.builder()
                 .user(user)

@@ -60,6 +60,7 @@ public class AiService {
      * Use from internal features (quiz, etc.) so usage is attributed to a user.
      */
     public ChatResponse chatStatelessFor(ChatRequest request, Integer userId, String feature) {
+        tokenUsageService.assertWithinDailyLimit(userId);
         ChatResponse response = callProvider(defaultProvider, request);
         tokenUsageService.record(userId, response, feature);
         return response;
@@ -78,6 +79,7 @@ public class AiService {
      * returned response always carries the session id.
      */
     public ChatResponse chat(String provider, ChatRequest request, Integer ownerId) {
+        tokenUsageService.assertWithinDailyLimit(ownerId);
         ChatSession session = resolveSession(request.sessionId(), ownerId, provider);
 
         // Full conversation = stored history + the new incoming messages.
